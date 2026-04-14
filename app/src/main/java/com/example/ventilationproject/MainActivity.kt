@@ -3,26 +3,79 @@ package com.example.ventilationproject
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.ventilationproject.Calculator
 import com.example.ventilationproject.ui.theme.VentilationProjectTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.example.ventilationproject.R
+
+const val SCREEN_LANGUAGE = "language"
+const val SCREEN_TYPE = "type"
+const val SCREEN_PIPE = "pipe"
+const val SCREEN_RECT = "rect"
+const val SCREEN_RESULT = "result"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             VentilationProjectTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+
+                var selectedLanguage by remember { mutableStateOf("uk") }
+                var currentScreen by remember { mutableStateOf(SCREEN_LANGUAGE) }
+                var resultValue by remember { mutableStateOf("") }
+
+                when (currentScreen) {
+
+                    SCREEN_LANGUAGE -> LanguageSelectionScreen { lang ->
+                        selectedLanguage = lang
+                        currentScreen = SCREEN_TYPE
+                    }
+
+                    SCREEN_TYPE -> TypeSelectionScreen(
+                        language = selectedLanguage,
+                        onBack = { currentScreen = SCREEN_LANGUAGE },
+                        onSelect = { type ->
+                            currentScreen = when (type) {
+                                "pipe" -> SCREEN_PIPE
+                                "rect" -> SCREEN_RECT
+                                else -> SCREEN_TYPE
+                            }
+                        }
+                    )
+
+                    SCREEN_PIPE -> PipeScreen(
+                        language = selectedLanguage,
+                        onBack = { currentScreen = SCREEN_TYPE },
+                        onResult = { value ->
+                            resultValue = value
+                            currentScreen = SCREEN_RESULT
+                        }
+                    )
+
+                    SCREEN_RECT -> RectScreen(
+                        language = selectedLanguage,
+                        onBack = { currentScreen = SCREEN_TYPE },
+                        onResult = { value ->
+                            resultValue = value
+                            currentScreen = SCREEN_RESULT
+                        }
+                    )
+
+                    SCREEN_RESULT -> ResultScreen(
+                        language = selectedLanguage,
+                        result = resultValue,
+                        onBack = { currentScreen = SCREEN_TYPE }
                     )
                 }
             }
@@ -31,17 +84,309 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun LanguageSelectionScreen(onLanguageSelected: (String) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("Оберіть мову / Wybierz język", fontSize = 24.sp)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(onClick = { onLanguageSelected("uk") }) {
+            Text("Українська 🇺🇦")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { onLanguageSelected("pl") }) {
+            Text("Polski 🇵🇱")
+        }
+    }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    VentilationProjectTheme {
-        Greeting("Android")
+fun MainScreen(language: String) {
+    val text = when (language) {
+        "uk" -> "Головний екран (українська)"
+        "pl" -> "Ekran główny (polski)"
+        else -> "Main screen"
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = text, fontSize = 24.sp)
+    }
+}
+
+@Composable
+fun TypeSelectionScreen(
+    language: String,
+    onBack: () -> Unit,
+    onSelect: (String) -> Unit
+) {
+    val title = if (language == "uk") "Оберіть тип" else "Wybierz typ"
+    val pipeText = if (language == "uk") "Труба" else "Rura"
+    val rectText = if (language == "uk") "Канал" else "Kanał"
+    val backText = if (language == "uk") "Назад" else "Powrót"
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+
+        Text(title, fontSize = 24.sp)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(onClick = { onSelect("pipe") }) {
+            Text(pipeText)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { onSelect("rect") }) {
+            Text(rectText)
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(onClick = { onBack() }) {
+            Text(backText)
+        }
+    }
+}
+
+@Composable
+fun PipeScreen(
+    language: String,
+    onBack: () -> Unit,
+    onResult: (String) -> Unit
+) {
+    var diameter by remember { mutableStateOf("") }
+    var insulation by remember { mutableStateOf("") }
+
+    val title = if (language == "uk") "Розрахунок труби" else "Obliczanie rury"
+    val diameterHint = if (language == "uk") "Діаметр труби (мм)" else "Średnica rury (mm)"
+    val insulationHint =
+        if (language == "uk") "Товщина утеплювача (мм)" else "Grubość izolacji (mm)"
+    val calculateText = if (language == "uk") "Розрахувати" else "Oblicz"
+    val backText = if (language == "uk") "Назад" else "Powrót"
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+
+        Text(title, fontSize = 24.sp)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = diameter,
+            onValueChange = { diameter = it },
+            label = { Text(diameterHint) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = insulation,
+            onValueChange = { insulation = it },
+            label = { Text(insulationHint) }
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(onClick = {
+            val d = diameter.toDoubleOrNull()
+            val t = insulation.toDoubleOrNull()
+
+            if (d != null && t != null) {
+
+                val lengthMm = Calculator.calculatePipe(d, t)
+
+                // переводимо в см і округляємо вгору
+                val lengthCm = kotlin.math.ceil(lengthMm / 10.0).toInt()
+
+                val resultText = if (language == "uk") {
+                    "Довжина: $lengthCm см"
+                } else {
+                    "Długość: $lengthCm cm"
+                }
+
+                onResult(resultText)
+
+            } else {
+                onResult(
+                    if (language == "uk") "Невірні дані"
+                    else "Błędne dane"
+                )
+            }
+        }) {
+            Text(calculateText)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = onBack) {
+            Text(backText)
+        }
+    }
+}
+
+@Composable
+fun RectScreen(
+    language: String,
+    onBack: () -> Unit,
+    onResult: (String) -> Unit
+) {
+
+    var width by remember { mutableStateOf("") }
+    var height by remember { mutableStateOf("") }
+    var insulation by remember { mutableStateOf("") }
+    var result by remember { mutableStateOf("") }
+
+    val title = if (language == "uk") "Розрахунок каналу" else "Obliczanie kanału"
+    val widthHint = if (language == "uk") "Ширина (мм)" else "Szerokość (mm)"
+    val heightHint = if (language == "uk") "Висота (мм)" else "Wysokość (mm)"
+    val insulationHint =
+        if (language == "uk") "Товщина утеплювача (мм)" else "Grubość izolacji (mm)"
+    val calcText = if (language == "uk") "Розрахувати" else "Oblicz"
+    val backText = if (language == "uk") "Назад" else "Powrót"
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+
+        Text(title, fontSize = 24.sp)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = width,
+            onValueChange = { width = it },
+            label = { Text(widthHint) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = height,
+            onValueChange = { height = it },
+            label = { Text(heightHint) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = insulation,
+            onValueChange = { insulation = it },
+            label = { Text(insulationHint) }
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(onClick = {
+            val w = width.toDoubleOrNull()
+            val h = height.toDoubleOrNull()
+            val t = insulation.toDoubleOrNull()
+
+            if (w != null && h != null && t != null) {
+
+                val lengthMm = Calculator.calculateRect(w, h, t)
+                val lengthCm = kotlin.math.ceil(lengthMm / 10.0).toInt()
+
+                onResult(
+                    if (language == "uk") {
+                        "Довжина: $lengthCm см"
+                    } else {
+                        "Długość: $lengthCm cm"
+                    }
+                )
+
+            } else {
+                result = if (language == "uk") "Невірні дані" else "Błędne dane"
+            }
+        }) {
+            Text(calcText)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(result, fontSize = 20.sp)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(onClick = onBack) {
+            Text(backText)
+        }
+    }
+}
+
+@Composable
+fun ResultScreen(
+    language: String,
+    result: String,
+    onBack: () -> Unit
+) {
+    val thankYouText = if (language == "uk") {
+        "Дякуємо!\nФірма може на тебе розраховувати"
+    } else {
+        "Dziękujemy!\nFirma może na Ciebie liczyć"
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        Image(
+            painter = painterResource(id = R.drawable.background),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 48.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top   // 🔥 ТУТ ГОЛОВНА ЗМІНА
+        ) {
+
+            Spacer(modifier = Modifier.height(40.dp)) // 🔥 підняли ще вище
+
+            Text(
+                text = thankYouText,
+                fontSize = 30.sp   // 🔥 БІЛЬШИЙ ТЕКСТ
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = result,
+                fontSize = 24.sp   // 🔥 БІЛЬШИЙ РЕЗУЛЬТАТ
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(onClick = onBack) {
+                Text(if (language == "uk") "Назад" else "Powrót")
+            }
+        }
     }
 }
