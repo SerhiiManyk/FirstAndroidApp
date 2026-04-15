@@ -93,16 +93,32 @@ fun LanguageSelectionScreen(onLanguageSelected: (String) -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
 
         FullScreenBackground()
+        Scrim()
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Text("Оберіть мову / Wybierz język", fontSize = 24.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Image(
+                painter = painterResource(id = R.drawable.top_image),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(110.dp),
+                contentScale = ContentScale.Fit
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Text(
+                text = "Оберіть мову / Wybierz język",
+                fontSize = 24.sp
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -115,6 +131,8 @@ fun LanguageSelectionScreen(onLanguageSelected: (String) -> Unit) {
             Button(onClick = { onLanguageSelected("pl") }) {
                 Text("Polski 🇵🇱")
             }
+
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
@@ -144,6 +162,7 @@ fun TypeSelectionScreen(
     Box(modifier = Modifier.fillMaxSize()) {
 
         FullScreenBackground()
+        Scrim()
 
         Column(
             modifier = Modifier
@@ -153,6 +172,18 @@ fun TypeSelectionScreen(
             verticalArrangement = Arrangement.Center
         ) {
 
+            // 🔥 ДОДАНА ЕМБЛЕМА
+            Image(
+                painter = painterResource(id = R.drawable.top_image),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(90.dp),
+                contentScale = ContentScale.Fit
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
                 text = if (language == "uk") "Оберіть тип" else "Wybierz typ",
                 fontSize = 24.sp
@@ -160,17 +191,17 @@ fun TypeSelectionScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(onClick = { onSelect("pipe") }) {
-                Text(if (language == "uk") "Труба" else "Rura")
-            }
+            TypeCard(
+                imageRes = R.drawable.rura,
+                text = if (language == "uk") "Труба" else "Rura"
+            ) { onSelect("pipe") }
+
+            TypeCard(
+                imageRes = R.drawable.kanal,
+                text = if (language == "uk") "Канал" else "Kanał"
+            ) { onSelect("rect") }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            Button(onClick = { onSelect("rect") }) {
-                Text(if (language == "uk") "Канал" else "Kanał")
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
 
             Button(onClick = onBack) {
                 Text(if (language == "uk") "Назад" else "Powrót")
@@ -188,38 +219,49 @@ fun PipeScreen(
     var diameter by remember { mutableStateOf("") }
     var insulation by remember { mutableStateOf("") }
 
-    val title = if (language == "uk") "Розрахунок труби" else "Obliczanie rury"
-    val diameterHint = if (language == "uk") "Діаметр (мм)" else "Średnica (mm)"
-    val insulationHint = if (language == "uk") "Утеплення (мм)" else "Izolacja (mm)"
-    val calcText = if (language == "uk") "Розрахувати" else "Oblicz"
-    val backText = if (language == "uk") "Назад" else "Powrót"
-
     Box(modifier = Modifier.fillMaxSize()) {
 
         FullScreenBackground()
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.25f))
-        )
+        Scrim()
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
 
-            Text(title, fontSize = 24.sp)
+            // 🔥 ЕМБЛЕМА ВГОРІ
+            Image(
+                painter = painterResource(id = R.drawable.top_image),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(top = 12.dp)
+                    .size(72.dp),
+                contentScale = ContentScale.Fit
+            )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
+            Text(
+                text = if (language == "uk") "Розрахунок труби" else "Obliczanie rury",
+                fontSize = 24.sp
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 🔥 ЧИТАБЕЛЬНИЙ INPUT (білий фон)
             OutlinedTextField(
                 value = diameter,
                 onValueChange = { diameter = it },
-                label = { Text(diameterHint) }
+                label = { Text(if (language == "uk") "Діаметр (мм)" else "Średnica (mm)") },
+                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = androidx.compose.ui.graphics.Color.White,
+                    unfocusedContainerColor = androidx.compose.ui.graphics.Color.White,
+                    focusedTextColor = androidx.compose.ui.graphics.Color.Black,
+                    unfocusedTextColor = androidx.compose.ui.graphics.Color.Black
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -227,7 +269,13 @@ fun PipeScreen(
             OutlinedTextField(
                 value = insulation,
                 onValueChange = { insulation = it },
-                label = { Text(insulationHint) }
+                label = { Text(if (language == "uk") "Утеплення (мм)" else "Izolacja (mm)") },
+                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = androidx.compose.ui.graphics.Color.White,
+                    unfocusedContainerColor = androidx.compose.ui.graphics.Color.White,
+                    focusedTextColor = androidx.compose.ui.graphics.Color.Black,
+                    unfocusedTextColor = androidx.compose.ui.graphics.Color.Black
+                )
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -240,13 +288,10 @@ fun PipeScreen(
                     val lengthMm = Calculator.calculatePipe(d, t)
                     val lengthCm = kotlin.math.ceil(lengthMm / 10.0).toInt()
 
-                    val resultText = if (language == "uk") {
-                        "Довжина: $lengthCm см"
-                    } else {
-                        "Długość: $lengthCm cm"
-                    }
-
-                    onResult(resultText)
+                    onResult(
+                        if (language == "uk") "Довжина: $lengthCm см"
+                        else "Długość: $lengthCm cm"
+                    )
                 } else {
                     onResult(
                         if (language == "uk") "Невірні дані"
@@ -254,13 +299,13 @@ fun PipeScreen(
                     )
                 }
             }) {
-                Text(calcText)
+                Text(if (language == "uk") "Розрахувати" else "Oblicz")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = onBack) {
-                Text(backText)
+                Text(if (language == "uk") "Назад" else "Powrót")
             }
         }
     }
@@ -277,54 +322,84 @@ fun RectScreen(
     var insulation by remember { mutableStateOf("") }
 
     val title = if (language == "uk") "Розрахунок каналу" else "Obliczanie kanału"
-    val widthHint = if (language == "uk") "Ширина (мм)" else "Szerokość (mm)"
-    val heightHint = if (language == "uk") "Висота (мм)" else "Wysokość (mm)"
-    val insulationHint = if (language == "uk") "Утеплення (мм)" else "Izolacja (mm)"
-    val calcText = if (language == "uk") "Розрахувати" else "Oblicz"
-    val backText = if (language == "uk") "Назад" else "Powrót"
+
+    val widthLabel = if (language == "uk") "Ширина (мм)" else "Szerokość (mm)"
+    val heightLabel = if (language == "uk") "Висота (мм)" else "Wysokość (mm)"
+    val insulationLabel = if (language == "uk") "Товщина утеплення (мм)" else "Grubość izolacji (mm)"
 
     Box(modifier = Modifier.fillMaxSize()) {
 
         FullScreenBackground()
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.25f))
-        )
+        Scrim()
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
 
-            Text(title, fontSize = 24.sp)
+            // 🔥 ЕМБЛЕМА
+            Image(
+                painter = painterResource(id = R.drawable.top_image),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(top = 12.dp)
+                    .size(72.dp),
+                contentScale = ContentScale.Fit
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = title,
+                fontSize = 24.sp
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = width,
                 onValueChange = { width = it },
-                label = { Text(widthHint) }
+                label = { Text(widthLabel) },
+                singleLine = true,
+                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = androidx.compose.ui.graphics.Color.White,
+                    unfocusedContainerColor = androidx.compose.ui.graphics.Color.White,
+                    focusedTextColor = androidx.compose.ui.graphics.Color.Black,
+                    unfocusedTextColor = androidx.compose.ui.graphics.Color.Black
+                )
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = height,
                 onValueChange = { height = it },
-                label = { Text(heightHint) }
+                label = { Text(heightLabel) },
+                singleLine = true,
+                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = androidx.compose.ui.graphics.Color.White,
+                    unfocusedContainerColor = androidx.compose.ui.graphics.Color.White,
+                    focusedTextColor = androidx.compose.ui.graphics.Color.Black,
+                    unfocusedTextColor = androidx.compose.ui.graphics.Color.Black
+                )
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = insulation,
                 onValueChange = { insulation = it },
-                label = { Text(insulationHint) }
+                label = { Text(insulationLabel) },
+                singleLine = true,
+                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = androidx.compose.ui.graphics.Color.White,
+                    unfocusedContainerColor = androidx.compose.ui.graphics.Color.White,
+                    focusedTextColor = androidx.compose.ui.graphics.Color.Black,
+                    unfocusedTextColor = androidx.compose.ui.graphics.Color.Black
+                )
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -338,13 +413,10 @@ fun RectScreen(
                     val lengthMm = Calculator.calculateRect(w, h, t)
                     val lengthCm = kotlin.math.ceil(lengthMm / 10.0).toInt()
 
-                    val resultText = if (language == "uk") {
-                        "Довжина: $lengthCm см"
-                    } else {
-                        "Długość: $lengthCm cm"
-                    }
-
-                    onResult(resultText)
+                    onResult(
+                        if (language == "uk") "Довжина: $lengthCm см"
+                        else "Długość: $lengthCm cm"
+                    )
                 } else {
                     onResult(
                         if (language == "uk") "Невірні дані"
@@ -352,13 +424,13 @@ fun RectScreen(
                     )
                 }
             }) {
-                Text(calcText)
+                Text(if (language == "uk") "Розрахувати" else "Oblicz")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = onBack) {
-                Text(backText)
+                Text(if (language == "uk") "Назад" else "Powrót")
             }
         }
     }
@@ -460,6 +532,30 @@ fun FullScreenBackground() {
         painter = painterResource(id = R.drawable.ventilation_bg),
         contentDescription = null,
         modifier = Modifier.fillMaxSize(),
-        contentScale = ContentScale.Crop
+        contentScale = ContentScale.Crop,
+        alpha = 0.35f // 🔥 прозорість фону
+    )
+}
+
+@Composable
+fun Scrim() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.45f)
+            )
+    )
+}
+
+@Composable
+fun TopImage() {
+    Image(
+        painter = painterResource(id = R.drawable.top_image),
+        contentDescription = null,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(120.dp), // 🔥 як кнопка/невеликий блок
+        contentScale = ContentScale.Fit
     )
 }
